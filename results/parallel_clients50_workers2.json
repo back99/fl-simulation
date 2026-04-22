@@ -1,0 +1,14 @@
+{
+  "mode": "parallel",
+  "num_clients": 50,
+  "num_workers": 2,
+  "num_rounds": 3,
+  "local_epochs": 1,
+  "total_time": 57.278809785842896,
+  "round_times": [
+    15.817572593688965,
+    15.757589340209961,
+    15.600250482559204
+  ],
+  "final_accuracy": 0.3776
+}
