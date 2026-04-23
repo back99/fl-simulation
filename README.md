@@ -110,10 +110,8 @@ Weighted averaging of client model updates proportional to local dataset size, a
 ## Future Work
 
 - Scale to larger client counts (100, 200) on HPC cluster (SLU Libra)
-- GPU-accelerated per-client training using CUDA
 - Asynchronous FedAvg aggregation to reduce idle time
 - Test with CIFAR-10 and more complex model architectures
-- Explore FedProx for improved convergence under Non-IID settings
 
 ## Environment
 
