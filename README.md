@@ -95,17 +95,31 @@ Weighted averaging of client model updates proportional to local dataset size, a
 
 ## Key Findings
 
-**Workers=2 is slower than serial.** Process spawning, NumPy serialization, and IPC overhead exceed parallelism benefits at low worker counts — consistent with Amdahl's Law.
+**Workers=2 is slower than serial.** Process spawning, MNIST reload per worker, and per-worker single-thread caps exceed parallelism benefits at low worker counts — consistent with Amdahl's Law.
 
 **Workers=8 achieves the best speedup (up to 1.49x).** All 8 physical CPU cores utilized, amortizing overhead across enough parallel work.
 
 **20 clients achieves the best speedup.** With 10 clients, workload per worker is too small. With 50 clients, each worker handles ~6 clients sequentially, reducing relative benefit.
 
 **Speedup is below theoretical maximum (8x)** due to:
-1. Process creation/teardown overhead per round
-2. NumPy serialization/deserialization of model weights
-3. MNIST dataset reload inside each worker
-4. Sequential FedAvg aggregation step
+1. Process creation/teardown overhead per round (`ProcessPoolExecutor` spawned each round)
+2. MNIST dataset reload inside each worker process
+3. Per-worker thread limits (`OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`) capping single-client throughput
+4. Only the client-training phase is parallelized; the rest of the round is sequential
+
+Notably, **NumPy serialization and FedAvg aggregation are *not* meaningful bottlenecks** — see the Overhead Breakdown below.
+
+## Overhead Breakdown
+
+To understand where time is actually spent, `parallel_main.py` instruments each round and records per-phase timings into the JSON results. Average per-round breakdown (50 clients):
+
+| Workers | Serialization (s) | Parallel Training (s) | FedAvg Aggregation (s) | Round Total (s) |
+|---------|-------------------|------------------------|------------------------|------------------|
+| 2       | 0.00007           | 15.74                  | 0.016                  | ~15.8            |
+| 4       | 0.00007           | 10.66                  | 0.011                  | ~10.7            |
+| 8       | 0.00007           | 8.70                   | 0.012                  | ~8.7             |
+
+**Key takeaway:** training time dominates each round (>99%), while serialization and aggregation are effectively free. Future speedup gains must therefore come from the parallel training phase itself — e.g., scaling out across nodes, overlapping training with aggregation (asynchronous FedAvg), or using realistic workloads where per-client compute is large enough to amortize process startup costs.
 
 ## Future Work
 

@@ -1,0 +1,13 @@
+{
+  "mode": "serial",
+  "num_clients": 200,
+  "num_rounds": 3,
+  "local_epochs": 1,
+  "total_time": 50.29473805427551,
+  "round_times": [
+    15.137811183929443,
+    15.093566417694092,
+    15.155214071273804
+  ],
+  "final_accuracy": 0.2404
+}
