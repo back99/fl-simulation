@@ -3,3 +3,6 @@
 
 # Internal research notes (private)
 .notes/
+
+.idea/
+.DS_Store
